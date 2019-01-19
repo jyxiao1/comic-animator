@@ -12,8 +12,8 @@ let panels = [
         duration: 6000 // ms
       },
     ],
-    transitionInType: "",
-    transitionOutType: ""
+    transitionInType: "fadeIn",
+    transitionOutType: "fadeOut"
   },
   {
     imageUrl: "https://2.bp.blogspot.com/-4SQSXJqyzOw/TjihymjBf_I/AAAAAAAACSA/2zN8dwb-xTY/s640/MangaPanelRun.jpg",
@@ -24,15 +24,18 @@ let panels = [
         duration: 6000 // ms
       },
     ],
-    transitionInType: "",
-    transitionOutType: ""
+    transitionInType: "fadeIn",
+    transitionOutType: "fadeOut"
   }
 ];
 
 let currentPanelIndex = 0;
 let imgPosX = 0;
 let imgPosY = 0;
+let opacity = 0; // default opaque
 let imgSize = 100; // percent
+let transitionInDuration = 900; // ms
+let transitionOutDuration = 900; // ms
 
 let startFrameTime = 0;
 
@@ -62,12 +65,18 @@ function transformPositions(animationConfig) {
         animationConfig.centerY = imgPosY;
         animationConfig.hasSetCenter = true;
       }
-      let diff = min(viewportHeight * 0.04, 20)
+      let diff = min(viewportHeight * 0.02, 10)
       imgPosX = animationConfig.centerX + random(-1 * diff, diff);
       imgPosY = animationConfig.centerY + random(-1 * diff, diff);
       break;
+    case "fadeIn":
+      opacity = min((transitionInDuration - animationConfig.duration) / transitionInDuration * 255, 255);
+      break;
+    case "fadeOut":
+      opacity = max((animationConfig.duration / transitionOutDuration) * 255, 0);
+      break;
     default:
-      throw new Error("err, this animation type is not supported");
+      throw new Error(`This animation type is not supported: ${animationConfig.type}`);
   }
 }
 
@@ -78,9 +87,19 @@ function setup() {
   
   panels = panels.map((panel => ({
     imagePanel: loadImage(panel.imageUrl), // convert imageUrl to image, make sure CORS are setup
-    animations: panel.animations,
-    transitionInType: panel.transitionInType,
-    transitionOutType: panel.transitionOutType
+    animations: [
+      {
+        type: panel.transitionInType,
+        order: 0,
+        duration: transitionInDuration // ms
+      },
+      ...panel.animations,
+      {
+        type: panel.transitionOutType,
+        order: panel.animations.length,
+        duration: transitionOutDuration // ms
+      },
+    ],
   })));
 
   startFrameTime = millis();
@@ -100,6 +119,7 @@ function draw() {
 
   background(255, 255, 255);
   // draw image in specific configurations
+  tint(255, opacity); 
   image(panels[currentPanelIndex].imagePanel, imgPosX, imgPosY); // zoom not implemented yet
   
   // update array/currentPanelIndex if necessary.
@@ -110,6 +130,7 @@ function draw() {
   }
 
   if (panels[currentPanelIndex].animations.length === 0) {
+
     currentPanelIndex += 1;
   }
   startFrameTime = millis();
