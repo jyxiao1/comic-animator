@@ -5,7 +5,7 @@ let canvasWidth = viewportWidth / 2;
 let canvasHeight = viewportHeight / 2;
 let transitionInDuration = 900; // ms
 let transitionOutDuration = 100; // ms
-let infreq = 2; // infrequency of shake.
+let infreq = 100; // infrequency of shake.
 
 let panels = [
   {
@@ -14,7 +14,8 @@ let panels = [
       {
         type: "shake",
         order: 0,
-        duration: 2000 // ms
+        duration: 2000, // ms
+        frequency: 0.9,
       },
     ],
     transitionInType: "fadeIn",
@@ -92,15 +93,17 @@ function applyAnimation(animationConfig) {
         animationConfig.centerX = imgPosX;
         animationConfig.centerY = imgPosY;
         animationConfig.hasSetCenter = true;
+        animationConfig.frequency = animationConfig.frequency || 0.5;
+        console.log(animationConfig.frequency);
       }
-      if (infreq_occ !== infreq) {
-        infreq_occ += 1
+      if (infreq_occ < infreq && animationConfig.frequency !== 1) {
+        infreq_occ += animationConfig.frequency * 100
         break;
       }
       let diff = min(canvasHeight * 0.02, 10)
       imgPosX = animationConfig.centerX + random(-1 * diff, diff);
       imgPosY = animationConfig.centerY + random(-1 * diff, diff);
-      infreq_occ = (infreq_occ + 1) % infreq;
+      infreq_occ = (infreq_occ + (animationConfig.frequency * 10)) % infreq;
       break;
     case "fadeIn":
       opacity = min((transitionInDuration - animationConfig.duration) / transitionInDuration * 255, 255);
@@ -175,9 +178,9 @@ function draw() {
   let currAnimations = getCurrentAnimations(panels[currentPanelIndex].animations);
   let newTime = millis();
   if (currentPanelIndex === 2) {
-    console.log(currAnimations);
-    console.log(panels[currentPanelIndex].animations);
-    debugger;
+    // console.log(currAnimations);
+    // console.log(panels[currentPanelIndex].animations);
+    // debugger;
   }
   for (let i = 0; i < currAnimations.length; i++) { // deliberate minus one in for loop conditional.
     let lastIndex = currAnimations.length - 1;
