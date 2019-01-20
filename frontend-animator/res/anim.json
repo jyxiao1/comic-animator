@@ -1,0 +1,80 @@
+[
+  {
+    "imageUrl": "res/ha01.png",
+    "animations": [
+      {
+        "type": "zoomOut",
+        "order": 0,
+        "fromX": 403,
+        "fromY": 387,
+        "duration": 1000
+      },
+      {
+        "type": "shake",
+        "order": 1,
+        "frequency": 1,
+        "duration": 1700
+      }
+    ],
+    "transitionInType": "fadeIn",
+    "transitionOutType": "fadeOut"
+  },
+  {
+    "imageUrl": "res/ha02.png",
+    "animations": [
+      {
+        "type": "zoomOut",
+        "order": 0,
+        "fromX": 445,
+        "fromY": 210,
+        "duration": 2400,
+        "magnification": 4
+      },
+      {
+        "type": "shake",
+        "order": 1,
+        "frequency": 0.8,
+        "duration": 1000
+      }
+    ],
+    "transitionInType": "fadeIn",
+    "transitionOutType": "fadeOut"
+  },
+  {
+    "imageUrl": "res/ha03.png",
+    "animations": [
+      {
+        "type": "shake",
+        "order": 0,
+        "frequency": 0.8,
+        "duration": 1700
+      }
+    ],
+    "transitionInType": "fadeIn",
+    "transitionOutType": "fadeOut"
+  },
+  {
+    "imageUrl": "res/ha04.png",
+    "animations": [
+      {
+        "type": "panLeft",
+        "order": 0,
+        "duration": 2700
+      }
+    ],
+    "transitionInType": "fadeIn",
+    "transitionOutType": "fadeOut"
+  },
+  {
+    "imageUrl": "res/ha05.png",
+    "animations": [
+      {
+        "type": "shake",
+        "order": 0,
+        "duration": 2000
+      }
+    ],
+    "transitionInType": "fadeIn",
+    "transitionOutType": "fadeOut"
+  }
+]

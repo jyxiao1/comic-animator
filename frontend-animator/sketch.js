@@ -7,57 +7,7 @@ let transitionInDuration = 900; // ms
 let transitionOutDuration = 100; // ms
 let infreq = 100; // infrequency of shake.
 
-let panels = [
-  {
-    imageUrl: "https://1.bp.blogspot.com/-lU1Rt8aiz_Q/TjigCH36HdI/AAAAAAAACRA/t97PyzdFg_c/s640/MangaPanelTears.png",
-    animations: [
-      {
-        type: "shake",
-        order: 0,
-        duration: 2000, // ms
-        frequency: 0.9,
-      },
-    ],
-    transitionInType: "fadeIn",
-    transitionOutType: "fadeOut"
-  },
-  {
-    imageUrl: "https://2.bp.blogspot.com/-4SQSXJqyzOw/TjihymjBf_I/AAAAAAAACSA/2zN8dwb-xTY/s640/MangaPanelRun.jpg",
-    animations: [
-      // {
-      //   type: "shake",
-      //   order: 0,
-      //   duration: 3000 // ms
-      // },
-      {
-        type: "panLeft",
-        order: 0,
-        duration: 2000 // ms
-      },
-    ],
-    transitionInType: "fadeIn",
-    transitionOutType: "fadeOut"
-  },
-  {
-    imageUrl: "https://3.bp.blogspot.com/-XiKy9wDmOKc/TjihzEKQ2JI/AAAAAAAACSY/RNcoCuQJP5Q/s640/MangaPanelHand.jpg",
-    animations: [
-      {
-        type: "zoomOut",
-        order: 0,
-        fromX: 655,
-        fromY: 100,
-        duration: 2500 // ms
-      },
-      {
-        type: "shake",
-        order: 1,
-        duration: 2000 // ms
-      },
-    ],
-    transitionInType: "fadeIn",
-    transitionOutType: "fadeOut"
-  }
-];
+let panels = [];
 
 let currentPanelIndex = 0;
 let imgPosX = 0;
@@ -141,22 +91,30 @@ function applyAnimation(animationConfig) {
 }
 
 function preload() {
-  panels = panels.map((panel => ({ // panel animation configuration transformation
-    imagePanel: loadImage(panel.imageUrl), // convert imageUrl to image, make sure CORS are setup
-    animations: [
-      {
-        type: panel.transitionInType,
-        order: 0,
-        duration: transitionInDuration // ms
-      },
-      ...panel.animations,
-      {
-        type: panel.transitionOutType,
-        order: panel.animations[panel.animations.length - 1].order,
-        duration: transitionOutDuration, // ms
-      },
-    ],
-  })));
+  panels = loadJSON('res/anim.json', () => {
+    panels_temp = []
+    for (let i = 0; i < Object.keys(panels).length; i++) {
+      panels_temp.push(panels[i]);
+    }
+    panels = panels_temp;
+    panels = panels.map((panel => ({ // panel animation configuration transformation
+      imagePanel: loadImage(panel.imageUrl), // convert imageUrl to image, make sure CORS are setup
+      animations: [
+        {
+          type: panel.transitionInType,
+          order: 0,
+          duration: transitionInDuration // ms
+        },
+        ...panel.animations,
+        {
+          type: panel.transitionOutType,
+          order: panel.animations[panel.animations.length - 1].order,
+          duration: transitionOutDuration, // ms
+        },
+      ],
+    })));
+  });
+  
   
 }
 
