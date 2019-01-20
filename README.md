@@ -1,3 +1,3 @@
-# comic-animator
+# mangamatic
 
 ## WIP
