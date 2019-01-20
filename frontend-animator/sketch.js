@@ -85,6 +85,8 @@ function applyAnimation(animationConfig) {
       imgPosX = - (imgSize * animationConfig.fromX - (canvasWidth / 2)) * (durr_min_zero / initialDuration);
       imgPosY = - (imgSize * animationConfig.fromY - (canvasHeight / 2)) * (durr_min_zero / initialDuration);
       break;
+    case "stay":
+      break;
     default:
       throw new Error(`This animation type is not supported: ${animationConfig.type}`);
   }

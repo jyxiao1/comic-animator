@@ -59,7 +59,12 @@
       {
         "type": "panLeft",
         "order": 0,
-        "duration": 2700
+        "duration": 3000
+      },
+      {
+        "type": "stay",
+        "order": 1,
+        "duration": 600
       }
     ],
     "transitionInType": "fadeIn",
@@ -71,6 +76,7 @@
       {
         "type": "shake",
         "order": 0,
+        "frequency": 0.5,
         "duration": 2000
       }
     ],
