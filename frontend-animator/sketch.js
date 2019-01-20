@@ -4,8 +4,8 @@ let viewportHeight = Math.max(document.documentElement.clientHeight, window.inne
 let canvasWidth = viewportWidth / 2;
 let canvasHeight = viewportHeight / 2;
 let transitionInDuration = 900; // ms
-let transitionOutDuration = 900; // ms
-let infreq = 3; // infrequency of shake.
+let transitionOutDuration = 100; // ms
+let infreq = 2; // infrequency of shake.
 
 let panels = [
   {
@@ -14,7 +14,7 @@ let panels = [
       {
         type: "shake",
         order: 0,
-        duration: 3000 // ms
+        duration: 2000 // ms
       },
     ],
     transitionInType: "fadeIn",
@@ -23,10 +23,34 @@ let panels = [
   {
     imageUrl: "https://2.bp.blogspot.com/-4SQSXJqyzOw/TjihymjBf_I/AAAAAAAACSA/2zN8dwb-xTY/s640/MangaPanelRun.jpg",
     animations: [
+      // {
+      //   type: "shake",
+      //   order: 0,
+      //   duration: 3000 // ms
+      // },
+      {
+        type: "panLeft",
+        order: 0,
+        duration: 2000 // ms
+      },
+    ],
+    transitionInType: "fadeIn",
+    transitionOutType: "fadeOut"
+  },
+  {
+    imageUrl: "https://3.bp.blogspot.com/-XiKy9wDmOKc/TjihzEKQ2JI/AAAAAAAACSY/RNcoCuQJP5Q/s640/MangaPanelHand.jpg",
+    animations: [
+      {
+        type: "zoomOut",
+        order: 0,
+        fromX: 655,
+        fromY: 100,
+        duration: 2500 // ms
+      },
       {
         type: "shake",
-        order: 0,
-        duration: 3000 // ms
+        order: 1,
+        duration: 2000 // ms
       },
     ],
     transitionInType: "fadeIn",
@@ -38,7 +62,7 @@ let currentPanelIndex = 0;
 let imgPosX = 0;
 let imgPosY = 0;
 let opacity = 0; // default opaque
-let imgSize = 100; // percent
+let imgSize = 1; // 100%
 let infreq_occ = 0;
 let startFrameTime = 0;
 
@@ -85,17 +109,35 @@ function applyAnimation(animationConfig) {
       opacity = max((animationConfig.duration / transitionOutDuration) * 255, 0);
       break;
     case "panLeft":
+      if (typeof animationConfig.hasStarted === 'undefined') {
+        animationConfig.hasStarted = true;
+        imgSize = canvasHeight / panels[currentPanelIndex].imagePanel.height;
+        animationConfig.distance = Math.abs((panels[currentPanelIndex].imagePanel.width * imgSize) - canvasWidth);
+        console.log(`imageWidth: ${panels[currentPanelIndex].imagePanel.width}, canvasWidth: ${canvasWidth}`);
+        animationConfig.initialDuration = animationConfig.duration;
+      }
+      imgPosX = - (Math.max(animationConfig.duration, 0) / animationConfig.initialDuration) * animationConfig.distance
+      break;
+    case "zoomOut":
+      if (typeof animationConfig.hasStarted === 'undefined') {
+        animationConfig.hasStarted = true;
+        animationConfig.magnification = animationConfig.magnification || 3;
+        animationConfig.initialDuration = animationConfig.duration;
+        animationConfig.finalImgSize = min(canvasWidth / panels[currentPanelIndex].imagePanel.width, canvasHeight / panels[currentPanelIndex].imagePanel.height);
+
+      }
+      let initialDuration = animationConfig.initialDuration;
+      let durr_min_zero = Math.max(animationConfig.duration, 0);
+      imgSize = (animationConfig.magnification - 1) * (durr_min_zero / initialDuration) + animationConfig.finalImgSize;
+      imgPosX = - (imgSize * animationConfig.fromX - (canvasWidth / 2)) * (durr_min_zero / initialDuration);
+      imgPosY = - (imgSize * animationConfig.fromY - (canvasHeight / 2)) * (durr_min_zero / initialDuration);
       break;
     default:
       throw new Error(`This animation type is not supported: ${animationConfig.type}`);
   }
 }
 
-function setup() {
-  background(255, 255, 255);
-  createCanvas(canvasWidth, canvasHeight);
-  frameRate(30);
-  
+function preload() {
   panels = panels.map((panel => ({ // panel animation configuration transformation
     imagePanel: loadImage(panel.imageUrl), // convert imageUrl to image, make sure CORS are setup
     animations: [
@@ -107,11 +149,20 @@ function setup() {
       ...panel.animations,
       {
         type: panel.transitionOutType,
-        order: panel.animations.length - 1,
+        order: panel.animations[panel.animations.length - 1].order,
         duration: transitionOutDuration, // ms
       },
     ],
   })));
+  
+}
+
+function setup() {
+  background(255, 255, 255);
+  createCanvas(canvasWidth, canvasHeight);
+  frameRate(30);
+
+  imgSize = min(canvasWidth / panels[0].imagePanel.width, canvasHeight / panels[0].imagePanel.height);
 
   startFrameTime = millis();
 }
@@ -123,9 +174,15 @@ function draw() {
   }
   let currAnimations = getCurrentAnimations(panels[currentPanelIndex].animations);
   let newTime = millis();
+  if (currentPanelIndex === 2) {
+    console.log(currAnimations);
+    console.log(panels[currentPanelIndex].animations);
+    debugger;
+  }
   for (let i = 0; i < currAnimations.length; i++) { // deliberate minus one in for loop conditional.
     let lastIndex = currAnimations.length - 1;
     if (i === lastIndex 
+      && currAnimations[i].type === 'fadeOut'
       && currAnimations.length > 1
       && !(currAnimations.length === panels[currentPanelIndex].animations.length 
           && currAnimations[lastIndex].duration >= currAnimations[lastIndex - 1].duration)) {
@@ -138,7 +195,8 @@ function draw() {
   background(255, 255, 255);
   // draw image in specific configurations
   tint(255, opacity); 
-  image(panels[currentPanelIndex].imagePanel, imgPosX, imgPosY); // zoom not implemented yet
+  let currImage = panels[currentPanelIndex].imagePanel;
+  image(currImage, imgPosX, imgPosY, imgSize * currImage.width, imgSize * currImage.height); // zoom not implemented yet
   
   // update array/currentPanelIndex if necessary.
   for (let i = 0; i < currAnimations.length; i++) {
@@ -147,9 +205,12 @@ function draw() {
     }
   }
 
-  if (panels[currentPanelIndex].animations.length === 0) {
+  let noMoreAnimationsForPanel = panels[currentPanelIndex].animations.length === 0;
+  if (noMoreAnimationsForPanel) {
     currentPanelIndex += 1;
-    
+  }
+  if (noMoreAnimationsForPanel && currentPanelIndex < panels.length) {
+    imgSize = min(canvasWidth / panels[currentPanelIndex].imagePanel.width, canvasHeight / panels[currentPanelIndex].imagePanel.height);
   }
   startFrameTime = millis();
 }
