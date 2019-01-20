@@ -1,6 +1,11 @@
-
 let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0) - 20;
 let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 20;
+
+let canvasWidth = viewportWidth / 2;
+let canvasHeight = viewportHeight / 2;
+let transitionInDuration = 900; // ms
+let transitionOutDuration = 900; // ms
+let infreq = 3; // infrequency of shake.
 
 let panels = [
   {
@@ -9,7 +14,7 @@ let panels = [
       {
         type: "shake",
         order: 0,
-        duration: 6000 // ms
+        duration: 3000 // ms
       },
     ],
     transitionInType: "fadeIn",
@@ -21,7 +26,7 @@ let panels = [
       {
         type: "shake",
         order: 0,
-        duration: 6000 // ms
+        duration: 3000 // ms
       },
     ],
     transitionInType: "fadeIn",
@@ -34,10 +39,9 @@ let imgPosX = 0;
 let imgPosY = 0;
 let opacity = 0; // default opaque
 let imgSize = 100; // percent
-let transitionInDuration = 900; // ms
-let transitionOutDuration = 900; // ms
-
+let infreq_occ = 0;
 let startFrameTime = 0;
+
 
 /**
  * @param {object[]} animations
@@ -57,7 +61,7 @@ function getCurrentAnimations(animations) {
   return currentAnimations;
 }
 
-function transformPositions(animationConfig) {
+function applyAnimation(animationConfig) {
   switch (animationConfig.type) {
     case "shake":
       if (typeof animationConfig.hasSetCenter === 'undefined') {
@@ -65,15 +69,22 @@ function transformPositions(animationConfig) {
         animationConfig.centerY = imgPosY;
         animationConfig.hasSetCenter = true;
       }
-      let diff = min(viewportHeight * 0.02, 10)
+      if (infreq_occ !== infreq) {
+        infreq_occ += 1
+        break;
+      }
+      let diff = min(canvasHeight * 0.02, 10)
       imgPosX = animationConfig.centerX + random(-1 * diff, diff);
       imgPosY = animationConfig.centerY + random(-1 * diff, diff);
+      infreq_occ = (infreq_occ + 1) % infreq;
       break;
     case "fadeIn":
       opacity = min((transitionInDuration - animationConfig.duration) / transitionInDuration * 255, 255);
       break;
     case "fadeOut":
       opacity = max((animationConfig.duration / transitionOutDuration) * 255, 0);
+      break;
+    case "panLeft":
       break;
     default:
       throw new Error(`This animation type is not supported: ${animationConfig.type}`);
@@ -82,10 +93,10 @@ function transformPositions(animationConfig) {
 
 function setup() {
   background(255, 255, 255);
-  createCanvas(viewportWidth, viewportHeight);
+  createCanvas(canvasWidth, canvasHeight);
   frameRate(30);
   
-  panels = panels.map((panel => ({
+  panels = panels.map((panel => ({ // panel animation configuration transformation
     imagePanel: loadImage(panel.imageUrl), // convert imageUrl to image, make sure CORS are setup
     animations: [
       {
@@ -96,8 +107,8 @@ function setup() {
       ...panel.animations,
       {
         type: panel.transitionOutType,
-        order: panel.animations.length,
-        duration: transitionOutDuration // ms
+        order: panel.animations.length - 1,
+        duration: transitionOutDuration, // ms
       },
     ],
   })));
@@ -112,8 +123,15 @@ function draw() {
   }
   let currAnimations = getCurrentAnimations(panels[currentPanelIndex].animations);
   let newTime = millis();
-  for (let i = 0; i < currAnimations.length; i++) {
-    transformPositions(currAnimations[i]);
+  for (let i = 0; i < currAnimations.length; i++) { // deliberate minus one in for loop conditional.
+    let lastIndex = currAnimations.length - 1;
+    if (i === lastIndex 
+      && currAnimations.length > 1
+      && !(currAnimations.length === panels[currentPanelIndex].animations.length 
+          && currAnimations[lastIndex].duration >= currAnimations[lastIndex - 1].duration)) {
+      continue;
+    }
+    applyAnimation(currAnimations[i]);
     currAnimations[i].duration -= (newTime - startFrameTime);
   }
 
@@ -130,8 +148,8 @@ function draw() {
   }
 
   if (panels[currentPanelIndex].animations.length === 0) {
-
     currentPanelIndex += 1;
+    
   }
   startFrameTime = millis();
 }
