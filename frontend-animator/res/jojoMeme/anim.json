@@ -1,0 +1,35 @@
+[
+  {
+    "imageUrl": "res/jojoMeme/jojo01.png",
+    "animations": [
+      {
+        "type": "zoomOut",
+        "order": 0,
+        "fromX": 228,
+        "fromY": 250,
+        "duration": 700
+      },
+      {
+        "type": "shake",
+        "order": 1,
+        "frequency": 0.7,
+        "duration": 1500
+      }
+    ],
+    "transitionInType": "fadeIn",
+    "transitionOutType": "fadeOut"
+  },
+  {
+    "imageUrl": "res/jojoMeme/jojo02.png",
+    "animations": [
+      {
+        "type": "shake",
+        "order": 0,
+        "frequency": 1,
+        "duration": 3000
+      }
+    ],
+    "transitionInType": "fadeIn",
+    "transitionOutType": "fadeOut"
+  }
+]
